@@ -41,7 +41,7 @@ public class AdminLauncher {
         
         // Abrir el JFrame en el hilo de Swing
         SwingUtilities.invokeLater(() -> {
-            System.out.println("✅ Abriendo ventana de administración...");
+            System.out.println("Abriendo ventana de administración...");
             AdminFrame frame = new AdminFrame();
             frame.setVisible(true);
         });
