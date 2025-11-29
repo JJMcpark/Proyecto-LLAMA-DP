@@ -2,7 +2,7 @@
 ## Sistema de Gestión de Pedidos con Patrones de Diseño
 
 **Universidad Tecnológica del Perú - Diseño de Patrones**  
-**Proyecto: Reducax - Tienda de Ropa Online**
+**Proyecto: LLAMA - Tienda de Ropa Online**
 
 ---
 
@@ -880,4 +880,4 @@ curl http://localhost:8080/api/pedidos
 
 ---
 
-**Equipo Reducax - UTP 2025** 🎓
+**Equipo LLAMA - UTP 2025** 🎓
