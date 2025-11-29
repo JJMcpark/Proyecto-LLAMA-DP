@@ -8,7 +8,7 @@ import com.dpatrones.proyecto.model.Producto;
  */
 public class ProductoBase implements IProductoComponente {
     
-    private Producto producto;
+    private final Producto producto;
     
     public ProductoBase(Producto producto) {
         this.producto = producto;

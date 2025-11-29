@@ -1,5 +1,8 @@
 package com.dpatrones.proyecto.patterns.observer;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 /**
  * PATRÓN OBSERVER - Observador de Dashboard
  * 
@@ -11,15 +14,22 @@ package com.dpatrones.proyecto.patterns.observer;
  */
 public class DashboardObserver implements VentasObserver {
     
-    private String nombrePanel;
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss");
+    
+    private final String nombrePanel;
+    private int contadorNotificaciones;
     
     public DashboardObserver(String nombrePanel) {
         this.nombrePanel = nombrePanel;
+        this.contadorNotificaciones = 0;
     }
 
     @Override
     public void actualizar(String mensaje) {
-        System.out.println("[" + nombrePanel + "] ACTUALIZACIÓN RECIBIDA");
+        contadorNotificaciones++;
+        String timestamp = LocalDateTime.now().format(FORMATTER);
+        
+        System.out.println("[" + timestamp + "] [" + nombrePanel + "] ACTUALIZACIÓN #" + contadorNotificaciones);
         System.out.println("   -> " + mensaje);
         System.out.println("   Actualizando componentes gráficos...");
     }
@@ -27,5 +37,19 @@ public class DashboardObserver implements VentasObserver {
     @Override
     public String getNombre() {
         return nombrePanel;
+    }
+    
+    /**
+     * Retorna el número de notificaciones recibidas
+     */
+    public int getContadorNotificaciones() {
+        return contadorNotificaciones;
+    }
+    
+    /**
+     * Reinicia el contador de notificaciones
+     */
+    public void resetearContador() {
+        this.contadorNotificaciones = 0;
     }
 }

@@ -17,6 +17,7 @@ public class PayPalProcesador implements IProcesadorPago {
     @Override
     public boolean procesarPago(Double monto) {
         System.out.println("[PAGO] Procesando S/." + monto + " con PAYPAL...");
+        System.out.println("[PAGO] Cuenta: " + (emailPayPal != null ? emailPayPal : "No especificada"));
         System.out.println("[PAGO] Redirigiendo a PayPal...");
         System.out.println("[PAGO] Pago PayPal APROBADO.");
         return true;
@@ -30,6 +31,9 @@ public class PayPalProcesador implements IProcesadorPago {
     @Override
     public boolean validarDatos() {
         System.out.println("[PAGO] Validando cuenta PayPal...");
+        if (emailPayPal == null || emailPayPal.isEmpty()) {
+            System.out.println("[PAGO] Advertencia: Email PayPal no especificado");
+        }
         return true;
     }
 }

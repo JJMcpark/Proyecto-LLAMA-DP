@@ -41,4 +41,31 @@ public class PaymentFactory {
     public static IProcesadorPago crearProcesadorPayPal(String email) {
         return new PayPalProcesador(email);
     }
+    
+    /**
+     * Crea procesador de contraentrega con método específico
+     * @param metodo EFECTIVO, YAPE, PLIN
+     * @param telefono teléfono de contacto del cliente
+     */
+    public static IProcesadorPago crearProcesadorContraentrega(String metodo, String telefono) {
+        return new ContraentregaProcesador(metodo, telefono);
+    }
+    
+    /**
+     * Verifica si un tipo de pago es válido
+     */
+    public static boolean esTipoPagoValido(String tipoPago) {
+        if (tipoPago == null) return false;
+        return switch (tipoPago.toUpperCase()) {
+            case "TARJETA", "PAYPAL", "CONTRAENTREGA" -> true;
+            default -> false;
+        };
+    }
+    
+    /**
+     * Obtiene lista de tipos de pago disponibles
+     */
+    public static String[] getTiposPagoDisponibles() {
+        return new String[]{"TARJETA", "PAYPAL", "CONTRAENTREGA"};
+    }
 }

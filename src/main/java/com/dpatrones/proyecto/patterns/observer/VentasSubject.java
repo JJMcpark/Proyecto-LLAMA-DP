@@ -1,7 +1,7 @@
 package com.dpatrones.proyecto.patterns.observer;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * PATRÓN OBSERVER - Subject (Sujeto)
@@ -11,30 +11,46 @@ import java.util.List;
  * 
  * Los paneles de Swing (Dashboard, Inventario, etc.) se registran
  * como observadores para actualizarse automáticamente.
+ * 
+ * Implementación thread-safe usando el patrón Holder (Bill Pugh Singleton).
  */
 public class VentasSubject {
     
-    private static VentasSubject instance;
-    
-    private List<VentasObserver> observadores;
+    // CopyOnWriteArrayList es thread-safe para iteración concurrente
+    private final List<VentasObserver> observadores;
     
     private VentasSubject() {
-        this.observadores = new ArrayList<>();
-    }
-    
-    public static VentasSubject getInstance() {
-        if (instance == null) {
-            instance = new VentasSubject();
-        }
-        return instance;
+        this.observadores = new CopyOnWriteArrayList<>();
     }
     
     /**
-     * Registra un nuevo observador
+     * Holder interno - se carga solo cuando se llama getInstance()
+     * Es thread-safe sin necesidad de synchronized
+     */
+    private static class Holder {
+        private static final VentasSubject INSTANCE = new VentasSubject();
+    }
+    
+    /**
+     * Obtiene la instancia única
+     */
+    public static VentasSubject getInstance() {
+        return Holder.INSTANCE;
+    }
+    
+    /**
+     * Registra un nuevo observador (evita duplicados)
      */
     public void agregarObservador(VentasObserver observador) {
-        observadores.add(observador);
-        System.out.println("[OBSERVER] Observador registrado: " + observador.getNombre());
+        if (observador == null) {
+            throw new IllegalArgumentException("El observador no puede ser nulo");
+        }
+        if (!observadores.contains(observador)) {
+            observadores.add(observador);
+            System.out.println("[OBSERVER] Observador registrado: " + observador.getNombre());
+        } else {
+            System.out.println("[OBSERVER] Observador ya registrado: " + observador.getNombre());
+        }
     }
     
     /**
