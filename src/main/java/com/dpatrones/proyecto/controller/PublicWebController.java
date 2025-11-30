@@ -25,6 +25,11 @@ public String mostrarUsuarios(Model model) {
     model.addAttribute("usuarios", usuarioService.listarTodos());
     return "usuarios"; // templates/usuarios.html
 }
+
+@GetMapping("/carrito")
+public String verCarrito() {
+    return "carrito"; // templates/carrito.html
+}
     // Luego puedes añadir más métodos:
     // @GetMapping("/login")
     // public String login() { return "login"; }

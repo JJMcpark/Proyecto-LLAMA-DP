@@ -3,8 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <title>Tienda de Ropa - Catálogo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
+<header>
+    <div class="header-container">
+        <a href="#" class="logo">
+            <img src="img/logo.png" alt="Tienda Llama">
+            <span>Tienda Llama</span>
+        </a>
+        <nav>
+            <ul>
+                <li><a href="#">Inicio</a></li>
+                <li><a th:href="@{/carrito}" id="cart-link">Carrito (<span id="cart-count">0</span>)</a></li>
+                <li><a href="#" id="account-link">Cuenta</a></li>
+            </ul>
+        </nav>
+    </div>
+</header> 
+
 <h1>Catálogo de productos</h1>
 
 <p>Total productos (vista): <span th:text="${productos.size()}">0</span></p>
@@ -14,17 +32,23 @@
 </div>
 
 <div th:if="${!#lists.isEmpty(productos)}">
-    <div th:each="producto : ${productos}">
+    <div th:each="producto : ${productos}" class="producto">
         <h3 th:text="${producto.nombre}">Nombre</h3>
         <p th:text="${producto.descripcion}">Descripción</p>
+        <p>S/ <span th:text="${producto.precio}">0.00</span></p>
+                <button class="btn-add-cart"
+                th:attr="data-id=${producto.id},
+                         data-nombre=${producto.nombre},
+                         data-precio=${producto.precio}">
+                    Comprar
+                </button>
     </div>
 </div>
 
-<div>
-    <div >
-        <h3 >Nombre t</h3>
-        <p >Descripción t</p>
-    </div>
+
 </div>
+
+<footer> 2025 Tienda Llama. Todos los derechos reservados.</footer>
+<script th:src="@{/js/script.js}"></script>
 </body>
 </html>

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Carrito de compras</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<header>
+    <div class="header-container">
+        <a th:href="@{/'/}" class="logo">
+            <span>Tienda Llama</span>
+        </a>
+        <nav>
+            <ul>
+                <li><a th:href="@{/'/}">Inicio</a></li>
+                <li><a th:href="@{/carrito}">Carrito (<span id="cart-count">0</span>)</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<h1>Tu carrito</h1>
+
+<div id="cart-items"></div>
+<div id="cart-actions">
+    <button id="btn-pay">Pagar</button>
+</div>
+
+<footer>2025 Tienda Llama. Todos los derechos reservados.</footer>
+<script th:src="@{/js/script.js}"></script>
+</body>
+</html>
