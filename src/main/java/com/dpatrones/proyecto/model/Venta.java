@@ -15,7 +15,7 @@ public class Venta {
     private Long id;
 
     @Column(name = "usuario_id")
-    private Long usuarioId; // por ahora será null (sin login)
+    private Long usuarioId;
 
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal total;

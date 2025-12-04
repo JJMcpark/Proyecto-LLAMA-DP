@@ -2,6 +2,7 @@ package com.dpatrones.proyecto.swing;
 
 import com.dpatrones.proyecto.patterns.singleton.AdminSession;
 import com.dpatrones.proyecto.model.Admin;
+import org.springframework.context.ApplicationContext;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,18 +14,24 @@ import java.awt.*;
  * Singleton y Observer en una aplicación de escritorio.
  */
 public class AdminFrame extends JFrame {
-    
+
+    private final ApplicationContext applicationContext;
     private LogisticaPanel panelLogistica;
-    
+
     public AdminFrame() {
-        setTitle("Sistema de Administración - Tienda de Ropa");
+        this(null);
+    }
+
+    public AdminFrame(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+        setTitle("LLAMA - Panel de Administración");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(800, 600);
+        setSize(900, 650);
         setLocationRelativeTo(null);
-        
+
         initComponents();
     }
-    
+
     private void initComponents() {
         // Menú
         JMenuBar menuBar = new JMenuBar();
@@ -40,8 +47,12 @@ public class AdminFrame extends JFrame {
         
         // Panel principal con pestañas
         JTabbedPane tabbedPane = new JTabbedPane();
-        
-        panelLogistica = new LogisticaPanel();
+
+        // Dashboard
+        DashboardPanel panelDashboard = new DashboardPanel(applicationContext);
+        tabbedPane.addTab("Dashboard", panelDashboard);
+
+        panelLogistica = new LogisticaPanel(applicationContext);
         tabbedPane.addTab("Logística", panelLogistica);
         
         // Más pestañas se pueden agregar aquí
@@ -54,6 +65,12 @@ public class AdminFrame extends JFrame {
         JLabel statusBar = new JLabel(" Sistema listo | Patrón Singleton y Observer activos");
         statusBar.setBorder(BorderFactory.createLoweredBevelBorder());
         add(statusBar, BorderLayout.SOUTH);
+
+        // Mostrar cantidad de observadores registrados (informativo)
+        try {
+            int obs = com.dpatrones.proyecto.patterns.observer.VentasSubject.getInstance().getCantidadObservadores();
+            statusBar.setText(" Observadores registrados: " + obs + " | Sistema listo");
+        } catch (Exception ignored) {}
     }
     
     /**
@@ -76,7 +93,7 @@ public class AdminFrame extends JFrame {
             try {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             } catch (Exception e) {
-                e.printStackTrace();
+                System.err.println("No se pudo aplicar LookAndFeel: " + e.getClass().getSimpleName() + " - " + e.getMessage());
             }
             
             AdminFrame frame = new AdminFrame();

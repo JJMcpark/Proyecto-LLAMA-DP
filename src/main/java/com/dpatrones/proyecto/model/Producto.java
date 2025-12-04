@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Table(name = "productos")
 public class Producto {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -21,10 +22,9 @@ public class Producto {
     private String descripcion;
     private Double precio;
     private Integer stock;
-    
-    // Atributos de la prenda
-    private String talla;      // XS, S, M, L, XL, XXL
+
+    private String talla;
     private String color;
-    private String tipoTela;   // Algodón, Poliéster, Lino, etc.
-    private String categoria;  // Camiseta, Pantalón, Vestido, etc.
+    private String tipoTela;
+    private String categoria;
 }

@@ -1,19 +1,31 @@
 package com.dpatrones.proyecto.patterns.facade;
 
-import com.dpatrones.proyecto.model.*;
-import com.dpatrones.proyecto.patterns.decorator.*;
-import com.dpatrones.proyecto.patterns.factory.IProcesadorPago;
-import com.dpatrones.proyecto.patterns.factory.PaymentFactory;
-import com.dpatrones.proyecto.patterns.observer.VentasSubject;
-import com.dpatrones.proyecto.service.*;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.dpatrones.proyecto.model.DetallePedido;
+import com.dpatrones.proyecto.model.Pedido;
+import com.dpatrones.proyecto.model.Producto;
+import com.dpatrones.proyecto.model.Usuario;
+import com.dpatrones.proyecto.patterns.decorator.BordadoDecorator;
+import com.dpatrones.proyecto.patterns.decorator.EmpaqueRegaloDecorator;
+import com.dpatrones.proyecto.patterns.decorator.EstampadoDecorator;
+import com.dpatrones.proyecto.patterns.decorator.IProductoComponente;
+import com.dpatrones.proyecto.patterns.decorator.ProductoBase;
+import com.dpatrones.proyecto.patterns.factory.IProcesadorPago;
+import com.dpatrones.proyecto.patterns.factory.PaymentFactory;
+import com.dpatrones.proyecto.patterns.observer.VentasSubject;
+import com.dpatrones.proyecto.service.NotificacionService;
+import com.dpatrones.proyecto.service.PedidoService;
+import com.dpatrones.proyecto.service.ProductoService;
+import com.dpatrones.proyecto.service.UsuarioService;
+
+import lombok.RequiredArgsConstructor;
 
 /**
  * PATRÓN FACADE - Fachada para el proceso de Checkout
@@ -36,14 +48,12 @@ public class OrderFacade {
     private final UsuarioService usuarioService;
     private final NotificacionService notificacionService;
     
-    /**
-     * DTO simple para los items del carrito
-     */
-    public record ItemCarrito(Long productoId, int cantidad, List<String> extras) {}
-    
-    /**
-     * Realiza todo el proceso de compra en un solo método
-     */
+    public record ItemCarrito(
+        Long productoId, 
+        int cantidad, 
+        List<String> extras) 
+    {}
+
     @Transactional
     public Pedido realizarCompra(Long usuarioId, List<ItemCarrito> carrito, 
                                   String metodoPago, String metodoEnvio, 

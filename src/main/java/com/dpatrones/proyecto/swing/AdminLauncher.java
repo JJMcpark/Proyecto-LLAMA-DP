@@ -8,41 +8,31 @@ import org.springframework.context.ConfigurableApplicationContext;
 
 import javax.swing.*;
 
-/**
- * Launcher para iniciar la aplicación de administración Swing
- * 
- * Ejecutar esta clase para abrir el panel de administración.
- */
 public class AdminLauncher {
     
     public static void main(String[] args) {
-        // Configurar look and feel nativo del sistema
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println("No se pudo aplicar LookAndFeel: " + e.getClass().getSimpleName() + " - " + e.getMessage());
         }
         
         System.out.println(" Iniciando LLAMA Admin Panel...");
         System.out.println(" Cargando Spring Boot (puede tomar unos segundos)...");
         
-        // Iniciar Spring Boot en segundo plano
         ConfigurableApplicationContext context = SpringApplication.run(ProyectoApplication.class, args);
         
-        // Crear un admin de prueba para la sesión
         Admin adminPrueba = new Admin();
         adminPrueba.setId(1L);
         adminPrueba.setNombre("Admin Test");
         adminPrueba.setEmail("admin@llama.com");
         adminPrueba.setArea("SUPERVISOR");
         
-        // Iniciar sesión
         AdminSession.getInstance().iniciarSesion(adminPrueba);
         
-        // Abrir el JFrame en el hilo de Swing
         SwingUtilities.invokeLater(() -> {
             System.out.println("Abriendo ventana de administración...");
-            AdminFrame frame = new AdminFrame();
+            AdminFrame frame = new AdminFrame(context);
             frame.setVisible(true);
         });
     }

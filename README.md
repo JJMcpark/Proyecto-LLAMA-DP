@@ -770,16 +770,18 @@ Pedido pedido = orderFacade.realizarCompra(usuarioId, carrito, "PAYPAL", "EXPRES
 │   │   └── 📁 facade/                       # 🎭 FACADE
 │   │       └── 📄 OrderFacade.java          # Simplifica checkout
 │   │
-│   └── 📁 swing/                            # UI Administrador
-│       ├── 📄 AdminFrame.java               # Ventana principal
-│       └── 📄 LogisticaPanel.java           # Panel de logística
+│   └── 📁 swing/                            # UI Administrador (Swing)
+│       ├── 📄 AdminLauncher.java            # Punto de entrada Swing (arranca Spring + JFrame)
+│       ├── 📄 AdminFrame.java               # Ventana principal (tabs)
+│       ├── 📄 DashboardPanel.java           # KPIs y pedidos del día (Observer + Services)
+│       └── 📄 LogisticaPanel.java           # Gestión logística (State + Observer)
 │
 ├── 📁 src/main/resources/
 │   └── 📄 application.properties            # Configuración BD
 │
 ├── 📄 pom.xml                               # Dependencias Maven
 ├── 📄 docker-compose.yml                    # Docker MySQL
-└── 📄 DOCUMENTACION.md                      # Este archivo
+└── 📄 README.md                             # Este archivo
 ```
 
 ---
@@ -811,17 +813,32 @@ spring.datasource.password=TU_PASSWORD
 spring.jpa.hibernate.ddl-auto=update
 ```
 
-### Paso 3: Ejecutar la Aplicación
+### Paso 3A: Ejecutar SOLO la API (Web)
 
-**Windows:**
-```bash
+Windows PowerShell:
+```powershell
+cd C:\Users\esteb\OneDrive\Escritorio\proyectollama
 .\mvnw.cmd spring-boot:run
 ```
 
-**Linux/Mac:**
+Linux/Mac:
 ```bash
 ./mvnw spring-boot:run
 ```
+
+### Paso 3B: Ejecutar el Panel Admin (Swing + API)
+
+Opción 1 - Desde VS Code/IDE:
+- Abre `src/main/java/com/dpatrones/proyecto/swing/AdminLauncher.java`
+- Click en "Run" sobre el método `main`
+
+Opción 2 - Desde Maven (línea de comando):
+```powershell
+cd C:\Users\esteb\OneDrive\Escritorio\proyectollama
+.\mvnw.cmd -DskipTests=true compile exec:java -Dexec.mainClass="com.dpatrones.proyecto.swing.AdminLauncher"
+```
+
+El AdminLauncher arranca Spring Boot y abre el JFrame del panel de administración con pestañas "Dashboard" y "Logística". Ambos paneles se actualizan automáticamente con el patrón Observer ante nuevas ventas o cambios de estado.
 
 ### Paso 4: Probar la API
 
@@ -832,6 +849,11 @@ curl http://localhost:8080/api/productos
 # Ver pedidos
 curl http://localhost:8080/api/pedidos
 ```
+
+### ¿Qué verás en Swing?
+- Dashboard: KPIs (ventas del día, conteo por estado) y tabla de pedidos de hoy.
+- Logística: Tabla de pedidos, botón "Avanzar Estado" (usa State + persiste) y "Simular Venta" (dispara Observer).
+- Ambos paneles se refrescan automáticamente cuando `VentasSubject` emite eventos `NUEVA_VENTA` o `CAMBIO_ESTADO`.
 
 ---
 

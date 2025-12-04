@@ -1,12 +1,17 @@
 package com.dpatrones.proyecto.swing;
 
+import com.dpatrones.proyecto.model.Pedido;
 import com.dpatrones.proyecto.patterns.observer.VentasObserver;
 import com.dpatrones.proyecto.patterns.observer.VentasSubject;
 import com.dpatrones.proyecto.patterns.singleton.AdminSession;
+import com.dpatrones.proyecto.service.PedidoService;
+import org.springframework.context.ApplicationContext;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 /**
  * Panel de Logística - Aplicación Admin (Swing)
@@ -17,20 +22,43 @@ import java.awt.*;
  * Esta es una implementación BÁSICA para demostrar el patrón.
  */
 public class LogisticaPanel extends JPanel implements VentasObserver {
-    
+
+    private final ApplicationContext applicationContext;
+    private PedidoService pedidoService;
+
     private JTable tablaPedidos;
     private DefaultTableModel modeloTabla;
     private JLabel lblEstado;
     private JTextArea txtLog;
-    
-    public LogisticaPanel() {
+
+    private static final DateTimeFormatter FECHA_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
+    public LogisticaPanel(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+        if (this.applicationContext != null) {
+            this.pedidoService = this.applicationContext.getBean(PedidoService.class);
+        }
+
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        
-        // Registrar como observador
-        VentasSubject.getInstance().agregarObservador(this);
-        
+
         initComponents();
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        // Registrar como observador cuando el componente está agregado al árbol
+        VentasSubject.getInstance().agregarObservador(this);
+    }
+
+    @Override
+    public void removeNotify() {
+        // Eliminar registro para evitar fugas de memoria
+        try {
+            VentasSubject.getInstance().eliminarObservador(this);
+        } catch (Exception ignored) {}
+        super.removeNotify();
     }
     
     private void initComponents() {
@@ -63,9 +91,13 @@ public class LogisticaPanel extends JPanel implements VentasObserver {
         
         JButton btnAvanzarEstado = new JButton("Avanzar Estado");
         btnAvanzarEstado.addActionListener(e -> avanzarEstadoSeleccionado());
+
+        JButton btnSimularVenta = new JButton("Simular Venta");
+        btnSimularVenta.addActionListener(e -> VentasSubject.getInstance().notificarNuevaVenta(999L, 123.45));
         
         panelBotones.add(btnActualizar);
         panelBotones.add(btnAvanzarEstado);
+        panelBotones.add(btnSimularVenta);
         
         // Log de eventos
         txtLog = new JTextArea(5, 50);
@@ -81,20 +113,30 @@ public class LogisticaPanel extends JPanel implements VentasObserver {
     }
     
     /**
-     * Carga los datos de pedidos (simulación)
+     * Carga los datos de pedidos desde la BD si hay contexto; si no, simula.
      */
     public void cargarDatos() {
         modeloTabla.setRowCount(0);
-        
-        // En una implementación real, aquí se consultaría la BD
-        // Usando el Singleton de conexión:
-        // Connection conn = AdminDatabaseConnection.getInstance().getConnection();
-        
-        // Datos de ejemplo
-        modeloTabla.addRow(new Object[]{1, "Juan Pérez", "S/.150.00", "PAGADO", "2024-11-29"});
-        modeloTabla.addRow(new Object[]{2, "María García", "S/.89.90", "ENVIADO", "2024-11-29"});
-        
-        agregarLog("Datos actualizados manualmente");
+
+        if (pedidoService != null) {
+            try {
+                List<Pedido> pedidos = pedidoService.listarTodos();
+                for (Pedido p : pedidos) {
+                    String usuarioNombre = (p.getUsuario() != null) ? p.getUsuario().getNombre() : "-";
+                    String fechaStr = (p.getFecha() != null) ? FECHA_FMT.format(p.getFecha()) : "-";
+                    modeloTabla.addRow(new Object[]{p.getId(), usuarioNombre, String.format("S/. %.2f", p.getTotal()), p.getEstado(), fechaStr});
+                }
+                agregarLog("Datos cargados desde BD: " + pedidos.size() + " pedidos");
+                return;
+            } catch (Exception ex) {
+                agregarLog("Error cargando pedidos de BD: " + ex.getMessage());
+            }
+        }
+
+        // Fallback: datos de ejemplo
+        modeloTabla.addRow(new Object[]{1L, "Juan Pérez", "S/. 150.00", "PAGADO", "2024-11-29 10:00"});
+        modeloTabla.addRow(new Object[]{2L, "María García", "S/. 89.90", "ENVIADO", "2024-11-29 11:30"});
+        agregarLog("Datos de ejemplo cargados (sin contexto)");
     }
     
     private void avanzarEstadoSeleccionado() {
@@ -103,18 +145,31 @@ public class LogisticaPanel extends JPanel implements VentasObserver {
             Long pedidoId = (Long) modeloTabla.getValueAt(filaSeleccionada, 0);
             String estadoActual = (String) modeloTabla.getValueAt(filaSeleccionada, 3);
             
-            // Simular cambio de estado
-            String nuevoEstado = switch (estadoActual) {
-                case "PENDIENTE" -> "PAGADO";
-                case "PAGADO" -> "ENVIADO";
-                case "ENVIADO" -> "ENTREGADO";
-                default -> estadoActual;
-            };
-            
-            modeloTabla.setValueAt(nuevoEstado, filaSeleccionada, 3);
-            
-            // Notificar a otros observadores
-            VentasSubject.getInstance().notificarCambioEstado(pedidoId, nuevoEstado);
+            if (pedidoService != null) {
+                try {
+                    Pedido actualizado = pedidoService.avanzarEstado(pedidoId);
+                    String nuevoEstado = actualizado.getEstado();
+                    modeloTabla.setValueAt(nuevoEstado, filaSeleccionada, 3);
+                    VentasSubject.getInstance().notificarCambioEstado(pedidoId, nuevoEstado);
+                    agregarLog("Pedido #" + pedidoId + " avanzado a " + nuevoEstado + " (BD)");
+                } catch (Exception ex) {
+                    agregarLog("Error al avanzar estado en BD: " + ex.getMessage());
+                }
+            } else {
+                // Simular cambio de estado
+                String nuevoEstado = switch (estadoActual) {
+                    case "PENDIENTE" -> "PAGADO";
+                    case "PAGADO" -> "ENVIADO";
+                    case "ENVIADO" -> "ENTREGADO";
+                    default -> estadoActual;
+                };
+
+                modeloTabla.setValueAt(nuevoEstado, filaSeleccionada, 3);
+
+                // Notificar a otros observadores
+                VentasSubject.getInstance().notificarCambioEstado(pedidoId, nuevoEstado);
+                agregarLog("Pedido #" + pedidoId + " avanzado a " + nuevoEstado + " (simulado)");
+            }
             
         } else {
             JOptionPane.showMessageDialog(this, "Seleccione un pedido primero");
@@ -133,8 +188,10 @@ public class LogisticaPanel extends JPanel implements VentasObserver {
         // Este método es llamado automáticamente cuando hay cambios
         SwingUtilities.invokeLater(() -> {
             agregarLog("OBSERVER: " + mensaje);
-            // En una app real, aquí recargaríamos los datos
-            // cargarDatos();
+            // Refrescar datos cuando hay eventos relevantes
+            if (mensaje.startsWith("NUEVA_VENTA") || mensaje.startsWith("CAMBIO_ESTADO")) {
+                cargarDatos();
+            }
         });
     }
 

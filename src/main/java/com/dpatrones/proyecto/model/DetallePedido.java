@@ -19,6 +19,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Table(name = "detalles_pedido")
 public class DetallePedido {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -26,9 +27,8 @@ public class DetallePedido {
     private Integer cantidad;
     private Double precioUnitario;
     private Double subtotal;
-    
-    // Extras aplicados (para el patrón Decorator)
-    private String extrasAplicados; // Ej: "Estampado,Bordado"
+
+    private String extrasAplicados;
     private Double costoExtras;
 
     @ManyToOne
