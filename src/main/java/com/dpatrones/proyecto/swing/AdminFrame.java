@@ -26,135 +26,99 @@ import com.dpatrones.proyecto.patterns.singleton.AdminSession;
 
 public class AdminFrame extends JFrame {
 
-    private final ApplicationContext applicationContext;
-    private JLabel lblStatus;
+    private final ApplicationContext ctx;
+    private final JLabel lblStatus = new JLabel();
 
-    public AdminFrame() {
-        this(null);
-    }
-
-    public AdminFrame(ApplicationContext applicationContext) {
-        this.applicationContext = applicationContext;
-        
+    public AdminFrame(ApplicationContext ctx) {
+        this.ctx = ctx;
         setTitle("LLAMA - Panel de Administración");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(950, 650);
         setLocationRelativeTo(null);
-        
-        initComponents();
-        iniciarActualizadorObservadores();
+        initUI();
+        startObserverUpdater();
     }
 
-    private void initComponents() {
-        // Menú
-        JMenuBar menuBar = new JMenuBar();
-        JMenu menuArchivo = new JMenu("Archivo");
-        
-        JMenuItem itemSalir = new JMenuItem("Salir");
-        itemSalir.addActionListener(e -> {
-            AdminSession.getInstance().cerrarSesion();
-            System.exit(0);
-        });
-        menuArchivo.add(itemSalir);
-        
-        JMenu menuAyuda = new JMenu("Ayuda");
-        JMenuItem itemPatrones = new JMenuItem("Ver Patrones");
-        itemPatrones.addActionListener(e -> mostrarPatrones());
-        menuAyuda.add(itemPatrones);
-        
-        menuBar.add(menuArchivo);
-        menuBar.add(menuAyuda);
-        setJMenuBar(menuBar);
-        
-        // Panel superior con info del admin (SINGLETON)
-        JPanel headerPanel = new JPanel(new BorderLayout());
-        headerPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        
-        String nombreAdmin = AdminSession.getInstance().getNombreAdmin();
-        JLabel lblAdmin = new JLabel("Usuario: " + nombreAdmin + " | Sesión activa (Singleton)");
-        headerPanel.add(lblAdmin, BorderLayout.WEST);
-        
+    private void initUI() {
+        setJMenuBar(createMenuBar());
+        add(createHeader(), BorderLayout.NORTH);
+        add(createTabs(), BorderLayout.CENTER);
+        add(createStatusBar(), BorderLayout.SOUTH);
+    }
+
+    private JMenuBar createMenuBar() {
+        JMenuBar bar = new JMenuBar();
+        JMenu archivo = new JMenu("Archivo");
+        JMenuItem salir = new JMenuItem("Salir");
+        salir.addActionListener(e -> salir());
+        archivo.add(salir);
+        JMenu ayuda = new JMenu("Ayuda");
+        JMenuItem patrones = new JMenuItem("Ver Patrones");
+        patrones.addActionListener(e -> mostrarPatrones());
+        ayuda.add(patrones);
+        bar.add(archivo);
+        bar.add(ayuda);
+        return bar;
+    }
+
+    private JPanel createHeader() {
+        JPanel header = new JPanel(new BorderLayout());
+        header.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        header.add(new JLabel("Usuario: " + AdminSession.getInstance().getNombreAdmin() + " | Singleton"),
+                BorderLayout.WEST);
         JButton btnCerrar = new JButton("Cerrar Sesión");
-        btnCerrar.addActionListener(e -> {
-            AdminSession.getInstance().cerrarSesion();
-            dispose();
-            System.exit(0);
-        });
-        headerPanel.add(btnCerrar, BorderLayout.EAST);
-        
-        add(headerPanel, BorderLayout.NORTH);
-        
-        // Pestañas
-        JTabbedPane tabbedPane = new JTabbedPane();
-        
-        tabbedPane.addTab("Dashboard", new DashboardPanel(applicationContext));
-        tabbedPane.addTab("Logística", new LogisticaPanel(applicationContext));
-        
-        add(tabbedPane, BorderLayout.CENTER);
-        
-        JPanel statusBar = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        statusBar.setBorder(BorderFactory.createLoweredBevelBorder());
-        
-        lblStatus = new JLabel("Observadores: 0 | Patrones: Singleton, Observer, State, Factory, Decorator, Facade");
-        statusBar.add(lblStatus);
-        
-        add(statusBar, BorderLayout.SOUTH);
+        btnCerrar.addActionListener(e -> salir());
+        header.add(btnCerrar, BorderLayout.EAST);
+        return header;
     }
-    
-    private void iniciarActualizadorObservadores() {
-        Timer timer = new Timer(500, e -> {
+
+    private JTabbedPane createTabs() {
+        JTabbedPane tabs = new JTabbedPane();
+        tabs.addTab("Dashboard", new DashboardPanel(ctx));
+        tabs.addTab("Logística", new LogisticaPanel(ctx));
+        return tabs;
+    }
+
+    private JPanel createStatusBar() {
+        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        bar.setBorder(BorderFactory.createLoweredBevelBorder());
+        bar.add(lblStatus);
+        return bar;
+    }
+
+    private void startObserverUpdater() {
+        new Timer(500, e -> {
             int obs = VentasSubject.getInstance().getCantidadObservadores();
-            lblStatus.setText("Observadores: " + obs + " | Patrones: Singleton, Observer, State, Factory, Decorator, Facade");
-        });
-        timer.setRepeats(true);
-        timer.start();
+            lblStatus.setText(
+                    "Observadores: " + obs + " | Patrones: Singleton, Observer, State, Factory, Decorator, Facade");
+        }).start();
     }
-    
+
+    private void salir() {
+        AdminSession.getInstance().cerrarSesion();
+        dispose();
+        System.exit(0);
+    }
+
     private void mostrarPatrones() {
         String info = """
-            PATRONES DE DISEÑO EN ESTE PROYECTO
-            ====================================
-            
-            SINGLETON:
-            - AdminSession: Sesión única del administrador
-            - VentasSubject: Un solo subject para notificaciones
-            
-            OBSERVER:
-            - Dashboard y Logística se actualizan automáticamente
-            - Usa VentasSubject.notificar() para avisar cambios
-            
-            STATE:
-            - Estados del pedido: PENDIENTE -> PAGADO -> ENVIADO -> ENTREGADO
-            - Cada estado tiene su comportamiento
-            
-            FACTORY:
-            - PaymentFactory crea procesadores de pago
-            
-            DECORATOR:
-            - Extras de productos: Bordado, Estampado, Empaque
-            
-            FACADE:
-            - OrderFacade simplifica el checkout
-            """;
-        
-        JTextArea textArea = new JTextArea(info);
-        textArea.setEditable(false);
-        JOptionPane.showMessageDialog(this, new JScrollPane(textArea), "Patrones", JOptionPane.INFORMATION_MESSAGE);
+                PATRONES: Singleton, Observer, State, Factory, Decorator, Facade
+
+                SINGLETON: AdminSession, VentasSubject
+                OBSERVER: Dashboard/Logística actualizan en tiempo real
+                STATE: PENDIENTE → PAGADO → ENVIADO → ENTREGADO
+                FACTORY: PaymentFactory crea procesadores de pago
+                DECORATOR: Extras (Bordado, Estampado, Empaque)
+                FACADE: OrderFacade simplifica checkout
+                """;
+        JTextArea text = new JTextArea(info);
+        text.setEditable(false);
+        JOptionPane.showMessageDialog(this, new JScrollPane(text), "Patrones", JOptionPane.INFORMATION_MESSAGE);
     }
-    
-    public static void iniciarAplicacionAdmin() {
-        Admin admin = Admin.builder()
-            .id(1L)
-            .nombre("Admin")
-            .email("admin@llama.com")
-            .area("SUPERVISOR")
-            .build();
-        
+
+    public static void iniciar(ApplicationContext ctx) {
+        Admin admin = Admin.builder().id(1L).nombre("Admin").email("admin@llama.com").area("SUPERVISOR").build();
         AdminSession.getInstance().iniciarSesion(admin);
-        
-        SwingUtilities.invokeLater(() -> {
-            AdminFrame frame = new AdminFrame();
-            frame.setVisible(true);
-        });
+        SwingUtilities.invokeLater(() -> new AdminFrame(ctx).setVisible(true));
     }
 }

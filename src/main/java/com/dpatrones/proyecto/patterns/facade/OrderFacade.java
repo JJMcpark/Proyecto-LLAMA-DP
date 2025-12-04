@@ -12,11 +12,7 @@ import com.dpatrones.proyecto.model.DetallePedido;
 import com.dpatrones.proyecto.model.Pedido;
 import com.dpatrones.proyecto.model.Producto;
 import com.dpatrones.proyecto.model.Usuario;
-import com.dpatrones.proyecto.patterns.decorator.BordadoDecorator;
-import com.dpatrones.proyecto.patterns.decorator.EmpaqueRegaloDecorator;
-import com.dpatrones.proyecto.patterns.decorator.EstampadoDecorator;
-import com.dpatrones.proyecto.patterns.decorator.IProductoComponente;
-import com.dpatrones.proyecto.patterns.decorator.ProductoBase;
+import com.dpatrones.proyecto.patterns.decorator.*;
 import com.dpatrones.proyecto.patterns.factory.IProcesadorPago;
 import com.dpatrones.proyecto.patterns.factory.PaymentFactory;
 import com.dpatrones.proyecto.patterns.observer.VentasSubject;
@@ -30,139 +26,117 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class OrderFacade {
-    
+
     private final ProductoService productoService;
     private final PedidoService pedidoService;
     private final UsuarioService usuarioService;
     private final NotificacionService notificacionService;
-    
-    public record ItemCarrito(
-        Long productoId, 
-        int cantidad, 
-        List<String> extras) 
-    {}
+
+    public record ItemCarrito(Long productoId, int cantidad, List<String> extras) {
+    }
 
     @Transactional
-    public Pedido realizarCompra(Long usuarioId, List<ItemCarrito> carrito, 
-                                  String metodoPago, String metodoEnvio, 
-                                  String direccionEnvio) {
-        
-        System.out.println("\n========== INICIANDO CHECKOUT ==========");
-        
-        // 1. Verificar que el usuario existe
+    public Pedido realizarCompra(Long usuarioId, List<ItemCarrito> carrito,
+            String metodoPago, String metodoEnvio, String direccionEnvio) {
+
         Usuario usuario = usuarioService.buscarPorId(usuarioId)
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        System.out.println("[CHECKOUT] Usuario: " + usuario.getNombre());
-        
-        // 2. Verificar stock de todos los productos
-        System.out.println("[CHECKOUT] Verificando inventario...");
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        verificarStock(carrito);
+
+        List<DetallePedido> detalles = new ArrayList<>();
+        double totalPedido = 0.0;
+
+        for (ItemCarrito item : carrito) {
+            Producto producto = productoService.buscarPorId(item.productoId()).get();
+            IProductoComponente productoDecorado = aplicarExtras(producto, item.extras());
+
+            double precioConExtras = productoDecorado.getPrecio();
+            double subtotal = precioConExtras * item.cantidad();
+            double costoExtras = precioConExtras - producto.getPrecio();
+
+            DetallePedido detalle = DetallePedido.builder()
+                    .producto(producto)
+                    .cantidad(item.cantidad())
+                    .precioUnitario(precioConExtras)
+                    .subtotal(subtotal)
+                    .extrasAplicados(productoDecorado.getExtras())
+                    .costoExtras(costoExtras * item.cantidad())
+                    .build();
+
+            detalles.add(detalle);
+            totalPedido += subtotal;
+        }
+
+        procesarPago(metodoPago, totalPedido);
+        descontarStock(carrito);
+
+        Pedido pedido = crearPedido(usuario, detalles, totalPedido, metodoPago, metodoEnvio, direccionEnvio);
+        pedido = pedidoService.guardar(pedido);
+
+        pedido.initEstado();
+        pedido.avanzarEstado();
+        pedido = pedidoService.guardar(pedido);
+
+        notificacionService.enviarConfirmacionPedido(usuario.getEmail(), pedido.getId());
+        notificacionService.enviarCodigoSeguimiento(usuario.getEmail(), pedido.getId(), pedido.getCodigoSeguimiento());
+
+        VentasSubject.getInstance().notificarNuevaVenta(pedido.getId(), totalPedido);
+
+        return pedido;
+    }
+
+    private void verificarStock(List<ItemCarrito> carrito) {
         for (ItemCarrito item : carrito) {
             if (!productoService.hayStock(item.productoId(), item.cantidad())) {
                 throw new RuntimeException("Stock insuficiente para producto ID: " + item.productoId());
             }
         }
-        System.out.println("[CHECKOUT] Inventario OK");
-        
-        // 3. Crear los detalles del pedido aplicando Decorators
-        List<DetallePedido> detalles = new ArrayList<>();
-        double totalPedido = 0.0;
-        
-        for (ItemCarrito item : carrito) {
-            Producto producto = productoService.buscarPorId(item.productoId()).get();
-            
-            // Aplicar patrón DECORATOR según los extras seleccionados
-            IProductoComponente productoDecorado = new ProductoBase(producto);
-            
-            if (item.extras() != null) {
-                for (String extra : item.extras()) {
-                    productoDecorado = aplicarDecorator(productoDecorado, extra);
-                }
+    }
+
+    private IProductoComponente aplicarExtras(Producto producto, List<String> extras) {
+        IProductoComponente resultado = new ProductoBase(producto);
+        if (extras != null) {
+            for (String extra : extras) {
+                resultado = switch (extra.toUpperCase()) {
+                    case "ESTAMPADO" -> new EstampadoDecorator(resultado);
+                    case "BORDADO" -> new BordadoDecorator(resultado);
+                    case "EMPAQUE_REGALO", "REGALO" -> new EmpaqueRegaloDecorator(resultado);
+                    default -> resultado;
+                };
             }
-            
-            double precioConExtras = productoDecorado.getPrecio();
-            double subtotal = precioConExtras * item.cantidad();
-            double costoExtras = precioConExtras - producto.getPrecio();
-            
-            DetallePedido detalle = DetallePedido.builder()
-                .producto(producto)
-                .cantidad(item.cantidad())
-                .precioUnitario(precioConExtras)
-                .subtotal(subtotal)
-                .extrasAplicados(productoDecorado.getExtras())
-                .costoExtras(costoExtras * item.cantidad())
-                .build();
-            
-            detalles.add(detalle);
-            totalPedido += subtotal;
-            
-            System.out.println("[CHECKOUT] " + productoDecorado.getDescripcion() + " x" + item.cantidad() + " = S/." + subtotal);
         }
-        
-        // 4. Procesar el pago usando FACTORY
-        System.out.println("[CHECKOUT] Procesando pago...");
+        return resultado;
+    }
+
+    private void procesarPago(String metodoPago, double total) {
         IProcesadorPago procesador = PaymentFactory.crearProcesador(metodoPago);
-        
         if (!procesador.validarDatos()) {
             throw new RuntimeException("Datos de pago inválidos");
         }
-        
-        if (!procesador.procesarPago(totalPedido)) {
+        if (!procesador.procesarPago(total)) {
             throw new RuntimeException("El pago fue rechazado");
         }
-        
-        // 5. Descontar stock
-        System.out.println("[CHECKOUT] Actualizando inventario...");
+    }
+
+    private void descontarStock(List<ItemCarrito> carrito) {
         for (ItemCarrito item : carrito) {
             productoService.descontarStock(item.productoId(), item.cantidad());
         }
-        
-        // 6. Crear el pedido
-        String codigoSeguimiento = generarCodigoSeguimiento();
-        
-        Pedido pedido = Pedido.builder()
-            .usuario(usuario)
-            .fecha(LocalDateTime.now())
-            .detalles(detalles)
-            .total(totalPedido)
-            .estado("PENDIENTE")
-            .metodoPago(metodoPago)
-            .metodoEnvio(metodoEnvio)
-            .direccionEnvio(direccionEnvio)
-            .codigoSeguimiento(codigoSeguimiento)
-            .build();
-        
-        pedido = pedidoService.guardar(pedido);
-        
-        // 7. El pago ya fue procesado, avanzamos el estado a PAGADO
-        pedido.initEstado();
-        pedido.avanzarEstado(); // PENDIENTE -> PAGADO
-        pedido = pedidoService.guardar(pedido);
-        
-        // 8. Enviar notificaciones
-        notificacionService.enviarConfirmacionPedido(usuario.getEmail(), pedido.getId());
-        notificacionService.enviarCodigoSeguimiento(usuario.getEmail(), pedido.getId(), codigoSeguimiento);
-        
-        // 9. Notificar a los observadores (PATRÓN OBSERVER)
-        VentasSubject.getInstance().notificarNuevaVenta(pedido.getId(), totalPedido);
-        
-        System.out.println("========== CHECKOUT COMPLETADO ==========");
-        System.out.println("[RESULTADO] Pedido #" + pedido.getId() + " creado exitosamente");
-        System.out.println("[RESULTADO] Total: S/." + totalPedido);
-        System.out.println("[RESULTADO] Código seguimiento: " + codigoSeguimiento);
-        
-        return pedido;
     }
-    
-    private IProductoComponente aplicarDecorator(IProductoComponente producto, String extra) {
-        return switch (extra.toUpperCase()) {
-            case "ESTAMPADO" -> new EstampadoDecorator(producto);
-            case "BORDADO" -> new BordadoDecorator(producto);
-            case "EMPAQUE_REGALO", "REGALO" -> new EmpaqueRegaloDecorator(producto);
-            default -> producto;
-        };
-    }
-    
-    private String generarCodigoSeguimiento() {
-        return "TRK-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+
+    private Pedido crearPedido(Usuario usuario, List<DetallePedido> detalles, double total,
+            String metodoPago, String metodoEnvio, String direccionEnvio) {
+        return Pedido.builder()
+                .usuario(usuario)
+                .fecha(LocalDateTime.now())
+                .detalles(detalles)
+                .total(total)
+                .estado("PENDIENTE")
+                .metodoPago(metodoPago)
+                .metodoEnvio(metodoEnvio)
+                .direccionEnvio(direccionEnvio)
+                .codigoSeguimiento("TRK-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
+                .build();
     }
 }
