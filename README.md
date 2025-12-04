@@ -1,3 +1,4 @@
+##Resumen del Proyecto
 # 🦙 TIENDA LLAMA - Sistema E-Commerce con Patrones de Diseño
 
 **Proyecto de Patrones de Diseño - Universidad Tecnológica del Perú**
@@ -5,6 +6,89 @@
 Sistema de e-commerce para tienda de ropa que implementa **6 patrones de diseño GoF** con dos interfaces:
 - **Frontend Web (Thymeleaf)**: Catálogo, carrito y checkout para clientes
 - **Panel Admin (Swing)**: Gestión de pedidos y logística
+
+---
+
+## 🛠️ Características del Proyecto
+
+### Tecnologías Utilizadas
+
+| Componente | Tecnología |
+|------------|------------|
+| **Lenguaje** | Java 21 |
+| **Framework Backend** | Spring Boot 3.4.1 |
+| **Base de Datos** | MySQL 8.0 |
+| **ORM** | Spring Data JPA / Hibernate |
+| **Frontend Web** | Thymeleaf + HTML5 + CSS3 + JavaScript |
+| **Panel Admin** | Java Swing |
+| **Build Tool** | Maven |
+
+### Arquitectura Full Stack
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                      CLIENTE (Navegador)                        │
+│                  HTML + CSS + JavaScript                        │
+└─────────────────────────────┬───────────────────────────────────┘
+                              │ HTTP/REST
+┌─────────────────────────────▼───────────────────────────────────┐
+│                    SPRING BOOT (Backend)                        │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐ │
+│  │ Controllers │  │  Services   │  │   Patrones de Diseño    │ │
+│  │ (REST API)  │──│  (Lógica)   │──│ Singleton|Factory|State │ │
+│  └─────────────┘  └─────────────┘  │ Observer|Decorator|Facade│ │
+│                                     └─────────────────────────┘ │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │              Repositories (Spring Data JPA)                 ││
+│  └─────────────────────────────────────────────────────────────┘│
+└─────────────────────────────┬───────────────────────────────────┘
+                              │ JDBC
+┌─────────────────────────────▼───────────────────────────────────┐
+│                         MySQL                                   │
+│        (productos, pedidos, usuarios, ventas, admins)           │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│                   PANEL ADMIN (Java Swing)                      │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐ │
+│  │ AdminFrame  │  │  Dashboard  │  │      Logística          │ │
+│  │  (Login)    │──│   Panel     │──│   (Gestión Pedidos)     │ │
+│  └─────────────┘  └─────────────┘  └─────────────────────────┘ │
+│                         │ Spring Context                        │
+│                         ▼                                       │
+│              Conexión directa a Servicios                       │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Estructura del Proyecto
+
+**Backend (Spring Boot):**
+- **Controladores (@RestController):** Gestionan las rutas de la API REST para productos, pedidos y usuarios.
+- **Servicios:** Lógica de negocio, como la gestión de productos, pedidos, ventas y usuarios.
+- **Repositorios (JpaRepository):** Acceso a la base de datos MySQL.
+- **Modelos:** Clases de entidad que representan las tablas en la base de datos (Producto, Pedido, Usuario, Venta, Admin).
+
+**Frontend Web (HTML, CSS, JS):**
+- **HTML:** Vistas dinámicas creadas con Thymeleaf (index, carrito, checkout).
+- **CSS:** Diseño responsivo para una experiencia de usuario agradable.
+- **JavaScript:** Lógica del frontend, manejo del carrito de compras y la integración con la API para realizar pedidos.
+
+**Panel de Administración (Java Swing):**
+- **AdminLauncher:** Punto de entrada que inicia Spring Boot y muestra el login.
+- **LoginDialog:** Autenticación del administrador usando el patrón Singleton (AdminSession).
+- **AdminFrame:** Ventana principal con pestañas para Dashboard y Logística.
+- **DashboardPanel:** Muestra KPIs (ventas, pedidos por estado) y tablas de resumen.
+- **LogisticaPanel:** Gestión de pedidos, cambio de estados y visualización de detalles con extras.
+
+### Principios SOLID Aplicados
+
+| Principio | Aplicación |
+|-----------|------------|
+| **S** - Single Responsibility | Cada clase tiene una única responsabilidad (Services, Controllers, Panels) |
+| **O** - Open/Closed | Decorators y Factory permiten extensión sin modificar código existente |
+| **L** - Liskov Substitution | Los procesadores de pago son intercambiables vía interfaz |
+| **I** - Interface Segregation | Interfaces pequeñas y específicas (VentasObserver, IProcesadorPago) |
+| **D** - Dependency Injection | Todos los servicios usan inyección de dependencias con Spring |
 
 ---
 
