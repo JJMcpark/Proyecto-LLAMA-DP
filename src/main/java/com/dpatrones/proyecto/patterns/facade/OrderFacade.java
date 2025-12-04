@@ -27,18 +27,6 @@ import com.dpatrones.proyecto.service.UsuarioService;
 
 import lombok.RequiredArgsConstructor;
 
-/**
- * PATRÓN FACADE - Fachada para el proceso de Checkout
- * 
- * Esta clase simplifica el proceso de compra orquestando múltiples subsistemas:
- * - Verificación de inventario
- * - Procesamiento de pago (Factory)
- * - Aplicación de extras (Decorator)
- * - Creación del pedido
- * - Notificaciones
- * 
- * El controlador solo necesita llamar a realizarCompra() sin conocer los detalles internos.
- */
 @Service
 @RequiredArgsConstructor
 public class OrderFacade {
@@ -165,21 +153,15 @@ public class OrderFacade {
         return pedido;
     }
     
-    /**
-     * Aplica el decorador correspondiente según el tipo de extra
-     */
     private IProductoComponente aplicarDecorator(IProductoComponente producto, String extra) {
         return switch (extra.toUpperCase()) {
             case "ESTAMPADO" -> new EstampadoDecorator(producto);
             case "BORDADO" -> new BordadoDecorator(producto);
             case "EMPAQUE_REGALO", "REGALO" -> new EmpaqueRegaloDecorator(producto);
-            default -> producto; // Si no reconoce el extra, no hace nada
+            default -> producto;
         };
     }
     
-    /**
-     * Genera un código de seguimiento único
-     */
     private String generarCodigoSeguimiento() {
         return "TRK-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }

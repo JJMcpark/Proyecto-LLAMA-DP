@@ -19,7 +19,7 @@ public class PedidoService {
     private final PedidoRepository pedidoRepository;
     
     public List<Pedido> listarTodos() {
-        return pedidoRepository.findAll();
+        return pedidoRepository.findAllConUsuario();
     }
     
     public Optional<Pedido> buscarPorId(Long id) {

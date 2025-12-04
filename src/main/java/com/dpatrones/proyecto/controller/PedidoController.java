@@ -1,15 +1,23 @@
 package com.dpatrones.proyecto.controller;
 
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.dpatrones.proyecto.model.Pedido;
 import com.dpatrones.proyecto.patterns.facade.OrderFacade;
 import com.dpatrones.proyecto.service.NotificacionService;
 import com.dpatrones.proyecto.service.PedidoService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/pedidos")
@@ -21,8 +29,10 @@ public class PedidoController {
     private final OrderFacade orderFacade;
     private final NotificacionService notificacionService;
     
+    // Endpoints orientados a CLIENTE (consulta propia y checkout)
     @GetMapping
     public List<Pedido> listarTodos() {
+        // Si se desea, esto podría restringirse; por ahora queda para catálogos simples
         return pedidoService.listarTodos();
     }
     
@@ -38,26 +48,6 @@ public class PedidoController {
         return pedidoService.buscarPorUsuario(usuarioId);
     }
     
-    @GetMapping("/estado/{estado}")
-    public List<Pedido> buscarPorEstado(@PathVariable String estado) {
-        return pedidoService.buscarPorEstado(estado.toUpperCase());
-    }
-    
-    /**
-     * Endpoint para realizar una compra usando el patrón FACADE
-     * 
-     * Body esperado:
-     * {
-     *   "usuarioId": 1,
-     *   "items": [
-     *     { "productoId": 1, "cantidad": 2, "extras": ["ESTAMPADO", "BORDADO"] },
-     *     { "productoId": 3, "cantidad": 1, "extras": [] }
-     *   ],
-     *   "metodoPago": "TARJETA",
-     *   "metodoEnvio": "EXPRESS",
-     *   "direccionEnvio": "Av. Ejemplo 123"
-     * }
-     */
     @PostMapping("/checkout")
     public ResponseEntity<?> realizarCompra(@RequestBody CheckoutRequest request) {
         try {
@@ -91,45 +81,12 @@ public class PedidoController {
      * Avanza el estado del pedido (PATRÓN STATE)
      * PENDIENTE -> PAGADO -> ENVIADO -> ENTREGADO
      */
-    @PostMapping("/{id}/avanzar-estado")
-    public ResponseEntity<?> avanzarEstado(@PathVariable Long id) {
-        try {
-            Pedido pedido = pedidoService.avanzarEstado(id);
-            
-            // Notificar al usuario
-            if (pedido.getUsuario() != null) {
-                notificacionService.enviarActualizacionEstado(
-                    pedido.getUsuario().getEmail(),
-                    pedido.getId(),
-                    pedido.getEstado()
-                );
-            }
-            
-            return ResponseEntity.ok(Map.of(
-                "mensaje", "Estado actualizado",
-                "nuevoEstado", pedido.getEstado(),
-                "pedido", pedido
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
-    }
+    // No exponemos avanzar estado vía REST: se gestiona en Swing con patrón State
     
     /**
      * Cancela el pedido si es posible según su estado actual
      */
-    @PostMapping("/{id}/cancelar")
-    public ResponseEntity<?> cancelar(@PathVariable Long id) {
-        try {
-            Pedido pedido = pedidoService.cancelarPedido(id);
-            return ResponseEntity.ok(Map.of(
-                "mensaje", "Pedido cancelado",
-                "pedido", pedido
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
-    }
+    // No exponemos cancelar vía REST: logística admin se maneja en Swing
     
     // DTO para el request de checkout
     public record CheckoutRequest(

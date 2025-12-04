@@ -2,10 +2,6 @@ package com.dpatrones.proyecto.patterns.decorator;
 
 import com.dpatrones.proyecto.model.Producto;
 
-/**
- * PATRÓN DECORATOR - Componente concreto base
- * Envuelve un Producto de la BD y lo hace compatible con el patrón Decorator.
- */
 public class ProductoBase implements IProductoComponente {
     
     private final Producto producto;
@@ -26,7 +22,7 @@ public class ProductoBase implements IProductoComponente {
 
     @Override
     public String getExtras() {
-        return ""; // Sin extras en el producto base
+        return "";
     }
     
     public Producto getProductoOriginal() {

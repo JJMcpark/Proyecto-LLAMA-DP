@@ -1,157 +1,395 @@
+/**
+ * ============================================================
+ * TIENDA LLAMA - Estilos CSS
+ * ============================================================
+ * Proyecto de Patrones de Diseño
+ * ============================================================
+ */
+
 * {
     margin: 0;
     padding: 0;
-    box-sizing: border-box; 
-    font-family:'Roboto', sans-serif; 
-    background:#fdfdfd; 
-    color:#333; 
+    box-sizing: border-box;
+    font-family: 'Roboto', sans-serif;
 }
 
 body {
     font-family: 'Roboto', sans-serif;
-    background-color: #fdfdfd;
+    background-color: #f5f5f5;
     color: #333;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
-/* HEADER */
-
-.header {
-    background: #fff;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+/* ========== HEADER ========== */
+header {
+    background: linear-gradient(135deg, #e60023 0%, #b8001b 100%);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     position: sticky;
     top: 0;
     z-index: 100;
 }
+
 .header-container {
     max-width: 1200px;
     margin: auto;
-    padding: 10px 20px;
+    padding: 15px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background:#fff; 
-    box-shadow:0 2px 5px rgba(0,0,0,0.1);
+    background: transparent;
 }
-.logo { 
-    display:flex; 
-    align-items:center; 
-    gap:10px; 
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white !important;
+    text-decoration: none;
 }
-.logo img {
-    height: 100px;
+
+.logo span {
+    color: white;
+    background: transparent;
 }
-.nav ul {
+
+nav ul {
     list-style: none;
     display: flex;
-    gap: 20px;
+    gap: 25px;
+    background: transparent;
 }
-nav ul li a { 
-    text-decoration:none; 
-    color:#333; 
-    font-weight:500; 
-    cursor:pointer; 
-    transition:color 0.3s;}
-nav ul li a:hover { 
-    color:#e60023; }
-.acciones .carrito {
+
+nav ul li {
+    background: transparent;
+}
+
+nav ul li a {
     text-decoration: none;
-    color: #333;
+    color: white;
+    font-weight: 500;
+    padding: 8px 15px;
+    border-radius: 5px;
+    transition: background 0.3s;
+    background: transparent;
 }
 
-/* BANNER */
-.banner img {
-    width: 1400px;
-    height: auto;
-    display: block;
+nav ul li a:hover {
+    background: rgba(255,255,255,0.2);
 }
 
-/* CATEGORÍAS */
-.categorias { 
-    text-align:center; 
-    margin:30px 0; 
-}
-.categorias button { 
-    margin:0 10px; 
-    padding:8px 15px; 
-    border:none; border-radius:5px; 
-    background:#e60023; 
-    color:white; 
-    cursor:pointer; 
-    transition:0.3s; }
-.categorias button:hover, .categorias button.active { background:#b8001b; }
-
-/* PRODUCTOS */
-.productos {
+/* ========== MAIN CONTAINER ========== */
+.container {
     max-width: 1200px;
-    margin: 40px auto;
-    padding: 0 20px;
+    margin: 0 auto;
+    padding: 30px 20px;
+    flex: 1;
 }
-.grid-productos {
+
+h1 {
+    color: #e60023;
+    margin-bottom: 10px;
+    font-size: 2rem;
+}
+
+.subtitle {
+    color: #666;
+    margin-bottom: 20px;
+}
+
+/* ========== INFO BOX (Patrones) ========== */
+.info-box {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%);
+    border-left: 4px solid #ffc107;
+    padding: 15px 20px;
+    margin-bottom: 25px;
+    border-radius: 0 8px 8px 0;
+}
+
+.info-box strong {
+    color: #856404;
+    background: transparent;
+}
+
+.info-box em {
+    background: transparent;
+}
+
+/* ========== PRODUCTOS GRID ========== */
+.productos-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 30px;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 25px;
+    margin-top: 20px;
 }
+
+.producto-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    padding: 20px;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.producto-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+}
+
+.producto-info h3 {
+    color: #333;
+    margin-bottom: 8px;
+    font-size: 1.2rem;
+}
+
+.producto-info .descripcion {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+}
+
+.producto-info .precio {
+    color: #e60023;
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+/* ========== EXTRAS OPTIONS (Decorator) ========== */
+.extras-options {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.extras-title {
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #555;
+    font-size: 0.9rem;
+}
+
+.extra-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.extra-checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #e60023;
+}
+
+.extra-checkbox span {
+    background: transparent;
+}
+
+/* ========== BUTTONS ========== */
+.btn-add-cart,
+.btn-primary {
+    width: 100%;
+    background: linear-gradient(135deg, #e60023 0%, #b8001b 100%);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-add-cart:hover,
+.btn-primary:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 15px rgba(230, 0, 35, 0.3);
+}
+
+.btn-secondary {
+    display: inline-block;
+    background: #6c757d;
+    color: white;
+    text-decoration: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    margin-left: 10px;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+}
+
+.btn-qty {
+    background: #e60023;
+    color: white;
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-remove {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+}
+
+/* ========== CARRITO TABLE ========== */
+.tabla-carrito {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    margin-bottom: 20px;
+}
+
+.tabla-carrito th {
+    background: #343a40;
+    color: white;
+    padding: 15px 10px;
+    text-align: left;
+    font-size: 0.9rem;
+}
+
+.tabla-carrito td {
+    padding: 15px 10px;
+    border-bottom: 1px solid #eee;
+    background: white;
+}
+
+.tabla-carrito tr:hover td {
+    background: #f8f9fa;
+}
+
+.extra-tag {
+    display: inline-block;
+    background: #e60023;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    margin: 2px;
+}
+
+.cart-total {
+    text-align: right;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.cart-total h2 {
+    color: #e60023;
+}
+
+.empty-cart {
+    text-align: center;
+    padding: 50px;
+    background: white;
+    border-radius: 8px;
+}
+
+/* ========== CHECKOUT OPTIONS ========== */
+.checkout-section {
+    background: white;
+    padding: 25px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.checkout-section h3 {
+    color: #333;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #e60023;
+    padding-bottom: 10px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #555;
+}
+
+.form-group select,
+.form-group input[type="text"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+.form-group select:focus,
+.form-group input[type="text"]:focus {
+    outline: none;
+    border-color: #e60023;
+}
+
+#cart-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+    align-items: center;
+}
+
+/* ========== FOOTER ========== */
+footer {
+    background: #343a40;
+    color: white;
+    text-align: center;
+    padding: 25px;
+    margin-top: auto;
+}
+
+footer p {
+    color: #adb5bd;
+    background: transparent;
+}
+
+.patterns-used {
+    font-size: 0.85rem;
+    margin-top: 8px;
+    color: #6c757d !important;
+}
+
+/* ========== EMPTY STATE ========== */
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    background: white;
+    border-radius: 8px;
+    color: #666;
+}
+
+/* ========== LEGACY (compatibilidad) ========== */
 .producto {
-    background: #fff;
+    background: white;
     border-radius: 8px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.08);
     padding: 15px;
     text-align: center;
-}
-.producto img {
-    width: 100%;
-    border-radius: 6px;
-}
-.productos h2 { 
-    margin-bottom:20px; 
-    text-align:center; 
-    font-size:2rem; 
-    color:#e60023; 
-}
-.producto h3 {
-    margin: 10px 0 5px;
-}
-.producto:hover { 
-    transform:translateY(-5px); 
-}
-.producto p {
-    color: #e60023;
-    font-size: 1.1rem;
-    margin-bottom: 10px;
-}
-.producto button {
-    background: #e60023;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 6px;
-    cursor: pointer;
+    margin-bottom: 15px;
 }
 
-/* PEDIDOS */
-.order { 
-    border:1px solid #ccc; 
-    padding:10px; 
-    margin-bottom:10px; 
-    border-radius:5px; 
+.producto:hover {
+    transform: translateY(-3px);
 }
-
-/* FOOTER */
-footer {
-    background: #fff;
-    text-align: center;
-    padding: 20px;
-    margin-top: 50px;
-    box-shadow: 0 -2px 4px rgba(0,0,0,0.08);
-}
-
-/*- MODALES -*/
-.modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; }
-.modal-content { background:#fff; padding:20px; width:90%; max-width:500px; border-radius:8px; max-height:80%; overflow-y:auto; }
-.modal-content h3 { margin-bottom:15px; color:#e60023; }
-.modal-content input { width:100%; padding:8px; margin-bottom:10px; border:1px solid #ccc; border-radius:5px; }
-.modal-content button { background:#e60023; color:#fff; border:none; padding:10px; border-radius:5px; cursor:pointer; width:100%; margin-bottom:5px; }
-.modal-content button:hover { background:#b8001b; }
-.close-btn { background:#333; margin-top:10px; }
-.cart-item { display:flex; justify-content:space-between; margin-bottom:10px; }
-.cart-item button { background:#b8001b; padding:2px 6px; font-size:0.9rem; }

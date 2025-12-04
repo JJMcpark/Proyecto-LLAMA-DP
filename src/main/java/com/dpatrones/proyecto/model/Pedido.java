@@ -46,11 +46,11 @@ public class Pedido {
     private String direccionEnvio;
     private String codigoSeguimiento;
 
-    @ManyToOne
+    @ManyToOne(fetch = jakarta.persistence.FetchType.EAGER)
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = jakarta.persistence.FetchType.EAGER)
     @JoinColumn(name = "pedido_id")
     @Builder.Default
     private List<DetallePedido> detalles = new ArrayList<>();

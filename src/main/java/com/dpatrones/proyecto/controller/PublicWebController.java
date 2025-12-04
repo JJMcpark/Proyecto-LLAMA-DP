@@ -14,27 +14,20 @@ public class PublicWebController {
     private final ProductoService productoService;
     private final UsuarioService usuarioService;
 
-@GetMapping("/")
-public String home(Model model) {
-    model.addAttribute("productos", productoService.listarTodos());
-    return "index"; // busca templates/index.html
-}
+    @GetMapping("/")
+    public String home(Model model) {
+        model.addAttribute("productos", productoService.listarTodos());
+        return "index";
+    }
 
-@GetMapping("/usuarios")
-public String mostrarUsuarios(Model model) {
-    model.addAttribute("usuarios", usuarioService.listarTodos());
-    return "usuarios"; // templates/usuarios.html
-}
+    @GetMapping("/usuarios")
+    public String mostrarUsuarios(Model model) {
+        model.addAttribute("usuarios", usuarioService.listarTodos());
+        return "usuarios";
+    }
 
-@GetMapping("/carrito")
-public String verCarrito() {
-    return "carrito"; // templates/carrito.html
-}
-    // Luego puedes añadir más métodos:
-    // @GetMapping("/login")
-    // public String login() { return "login"; }
-
-    // @GetMapping("/carrito")
-    // public String carrito() { return "carrito"; }
-    
+    @GetMapping("/carrito")
+    public String verCarrito() {
+        return "carrito";
+    }
 }

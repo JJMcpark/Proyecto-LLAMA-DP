@@ -1,9 +1,5 @@
 package com.dpatrones.proyecto.patterns.decorator;
 
-/**
- * PATRÓN DECORATOR - Clase abstracta Decorador
- * Clase base para todos los decoradores de producto.
- */
 public abstract class ProductoDecorator implements IProductoComponente {
     
     protected IProductoComponente productoDecorado;
