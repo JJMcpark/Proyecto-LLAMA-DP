@@ -1,5 +1,7 @@
 package com.dpatrones.proyecto.swing;
 
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
@@ -18,14 +20,32 @@ public class AdminLauncher {
         }
 
         System.out.println("🦙 Iniciando LLAMA Admin...");
+
         SpringApplication app = new SpringApplication(ProyectoApplication.class);
         app.setHeadless(false);
-        ConfigurableApplicationContext ctx = app.run(args);
+
+        ConfigurableApplicationContext ctx;
+        try {
+            ctx = app.run(args);
+        } catch (Exception e) {
+            System.err.println("Error al iniciar Spring Boot: " + e.getMessage());
+            JOptionPane.showMessageDialog(null, "Error al conectar con la BD:\n" + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        System.out.println("✅ Spring Boot iniciado");
 
         SwingUtilities.invokeLater(() -> {
-            if (LoginDialog.mostrarLogin(null) && AdminSession.getInstance().isSesionActiva()) {
-                new AdminFrame(ctx).setVisible(true);
+            boolean loginOk = LoginDialog.mostrarLogin(null);
+
+            if (loginOk && AdminSession.getInstance().isSesionActiva()) {
+                System.out.println("✅ Login exitoso: " + AdminSession.getInstance().getNombreAdmin());
+                AdminFrame frame = new AdminFrame(ctx);
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                frame.setVisible(true);
             } else {
+                System.out.println("❌ Login cancelado");
                 ctx.close();
                 System.exit(0);
             }

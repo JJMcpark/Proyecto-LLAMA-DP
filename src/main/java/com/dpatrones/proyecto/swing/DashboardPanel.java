@@ -47,7 +47,7 @@ public class DashboardPanel extends JPanel implements VentasObserver {
 
         JPanel kpis = new JPanel(new GridLayout(1, 5, 8, 8));
         kpis.setBorder(BorderFactory.createTitledBorder("Indicadores"));
-        kpis.add(crearKPI("Ventas Front", lblVentasFront));
+        kpis.add(crearKPI("Total Ventas", lblVentasFront));
         kpis.add(crearKPI("# Ventas", lblTotalVentas));
         kpis.add(crearKPI("Pendientes", lblPendientes));
         kpis.add(crearKPI("Pagados", lblPagados));
@@ -55,8 +55,8 @@ public class DashboardPanel extends JPanel implements VentasObserver {
         add(kpis, BorderLayout.NORTH);
 
         JPanel tablas = new JPanel(new GridLayout(2, 1, 5, 5));
-        tablas.add(crearPanelTabla("Ventas (Front)", new JTable(modeloVentas)));
-        tablas.add(crearPanelTabla("Pedidos (Checkout)", new JTable(modeloPedidos)));
+        tablas.add(crearPanelTabla("Ventas", new JTable(modeloVentas)));
+        tablas.add(crearPanelTabla("Pedidos", new JTable(modeloPedidos)));
         add(tablas, BorderLayout.CENTER);
 
         JButton btn = new JButton("Refrescar");

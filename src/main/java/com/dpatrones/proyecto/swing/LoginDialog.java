@@ -31,10 +31,17 @@ public class LoginDialog extends JDialog {
 
     public LoginDialog(Frame parent) {
         super(parent, "LLAMA - Iniciar Sesión", true);
-        setSize(300, 200);
+        setSize(300, 220);
         setResizable(false);
         setLocationRelativeTo(parent);
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                loginExitoso = false;
+                dispose();
+            }
+        });
         initUI();
     }
 
